@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#fff8df">
+  <meta name="theme-color" content="#fff9e5">
   <title>네컷 스튜디오 — 오늘의 순간을 네 장으로</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,15 +13,13 @@
 <body>
   <header class="topbar">
     <a class="brand" href="#top" aria-label="네컷 스튜디오 홈"><span class="brand-mark">4</span><span>fourcut<span class="brand-dot">.</span></span></a>
-    <div class="top-note"><span class="status-dot"></span> 당신의 오늘을 기록해요</div>
   </header>
 
   <main id="top">
     <section class="intro">
       <div class="eyebrow"><span>✳</span> YOUR LITTLE PHOTO STUDIO</div>
-      <h1>오늘의 순간을<br><span>네 장으로.</span></h1>
+      <h1>오늘의 순간을<br><span>네 장으로</span></h1>
       <p>갤러리의 사진으로, 혹은 지금 카메라로.<br>나만의 네컷 사진을 만들어보세요.</p>
-      <div class="hero-stamp" aria-hidden="true"><span>4</span><small>good<br>moments</small></div>
     </section>
 
     <section class="studio" aria-label="네컷 사진 만들기">
@@ -37,9 +35,10 @@
         </div>
 
         <div id="uploadPanel" class="panel">
-          <div class="upload-hint"><span class="hint-icon">↥</span><span><strong>사진 네 장을 선택해주세요</strong><small>각 프레임을 눌러 사진을 올릴 수 있어요</small></span><span class="count" id="photoCount">0 / 4</span></div>
+          <div class="upload-hint"><span class="hint-icon">↥</span><span><strong id="uploadTitle">사진 네 장을 선택해주세요</strong><small>프레임을 눌러 추가하고 화살표로 순서를 바꿔요</small></span><span class="count" id="photoCount">0 / 4</span></div>
           <div class="slots" id="slots"></div>
-          <input id="fileInput" type="file" accept="image/*" hidden>
+          <div id="photoAdjustments" class="photo-adjustments"></div>
+          <input id="fileInput" type="file" accept="image/*" multiple hidden>
           <p class="privacy-note"><span>⌑</span> 선택한 사진은 이 기기에서만 처리돼요.</p>
         </div>
 
@@ -50,30 +49,38 @@
             <div id="cameraPlaceholder" class="camera-placeholder"><span class="camera-illustration">◎</span><strong>카메라로 네 장을 찍어보세요</strong><small>카메라 권한을 허용하면 바로 시작할 수 있어요</small><button id="startCamera" class="dark-button" type="button">카메라 시작하기 <span>→</span></button></div>
             <div id="shotBadge" class="shot-badge hidden"></div>
           </div>
-          <div class="camera-controls"><span class="camera-tip" id="cameraTip">촬영한 사진은 아래 프레임에 담겨요</span><button id="captureBtn" class="capture-button" type="button" disabled><span></span><b>촬영</b></button><button id="stopCamera" class="text-button" type="button" disabled>카메라 끄기</button></div>
+          <div class="camera-controls"><span class="camera-tip" id="cameraTip">촬영한 사진은 아래 프레임에 담겨요</span><label class="timer-select">타이머<select id="timerSelect" aria-label="촬영 타이머"><option value="0">끄기</option><option value="3">3초</option><option value="5">5초</option><option value="10">10초</option></select></label><button id="captureBtn" class="capture-button" type="button" disabled><span></span><b>촬영</b></button><button id="stopCamera" class="text-button" type="button" disabled>카메라 끄기</button></div>
           <div class="camera-thumbs" id="cameraThumbs"></div>
           <p class="privacy-note"><span>⌑</span> 카메라 사진도 서버에 전송되지 않아요.</p>
         </div>
 
         <div class="options">
-          <div class="option-label">FRAME COLOR <small>프레임 색상</small></div>
-          <div class="swatches" role="radiogroup" aria-label="프레임 색상">
-            <button class="swatch selected" data-color="#ffffff" data-name="화이트" aria-label="화이트" aria-checked="true" role="radio" type="button"><span></span></button>
-            <button class="swatch" data-color="#171717" data-name="블랙" aria-label="블랙" aria-checked="false" role="radio" type="button"><span></span></button>
-            <label class="hex-color"><span>#</span><input id="hexInput" type="text" value="FFFFFF" maxlength="6" aria-label="프레임 색상 HEX 코드" autocomplete="off" spellcheck="false"></label>
-            <span id="colorName" class="color-name">화이트</span>
+          <div class="frame-layout-control">
+            <div class="option-label">FRAME LAYOUT <small>프레임 종류</small></div>
+            <div id="frameChoices" class="frame-choices" role="radiogroup" aria-label="프레임 종류"></div>
+          </div>
+          <div class="frame-photo-control">
+            <div class="option-label">FRAME PHOTO <small>프레임 배경 사진</small></div>
+            <div class="frame-photo-actions"><button id="chooseFramePhoto" class="frame-photo-button" type="button">배경 사진 선택</button><button id="clearFramePhoto" class="frame-photo-clear hidden" type="button">제거</button><span id="framePhotoName">선택 안 함 · 프레임은 흰색</span></div>
+            <input id="framePhotoInput" type="file" accept="image/*" hidden>
+            <small class="frame-photo-help">선택한 사진이 프레임 여백과 배경에 깔립니다.</small>
+          </div>
+          <div class="filter-control">
+            <div class="option-label">PHOTO FILTER <small>사진 필터</small></div>
+            <div class="filter-options" role="group" aria-label="사진 필터"><button class="filter-button selected" type="button" data-filter="color">기본 (컬러)</button><button class="filter-button" type="button" data-filter="grayscale">흑백</button></div>
           </div>
           <label class="caption-option"><span><b>날짜 넣기</b><small>프레임 아래에 오늘 날짜를 새겨요</small></span><input id="dateToggle" type="checkbox" checked><i></i></label>
         </div>
+        <label class="caption-input"><span><b>프레임 문구</b><small>원하는 문구를 적어주세요. 비워두면 표시하지 않아요.</small></span><textarea id="captionInput" maxlength="48" rows="2" placeholder="예: 오늘도 반짝이는 우리"></textarea></label>
         <div class="action-row"><button id="downloadBtn" class="download-button" type="button" disabled><span>↓</span> 사진 저장하기</button><small>고화질 JPG · 4컷 사진</small></div>
         <p id="message" class="message" aria-live="polite">사진 네 장을 채우면 저장할 수 있어요.</p>
       </div>
 
       <aside class="preview-side">
-        <div class="preview-head"><div><div class="step-label">02 — PREVIEW</div><h2>미리보기</h2></div><span class="live-tag"><i></i> LIVE</span></div>
-        <div class="preview-well"><div id="photoStrip" class="photo-strip"><div class="strip-brand"><span>fourcut</span><span class="brand-star">✳</span></div><div id="previewFrames" class="preview-frames"></div><div class="strip-footer"><span>GOOD<br>THINGS<br>HAPPEN</span><span id="previewDate"></span></div></div></div>
+        <div class="preview-head"><div><div class="step-label">02 — PREVIEW</div><h2>미리보기</h2></div></div>
+        <div class="preview-well"><canvas id="previewCanvas" class="preview-canvas" aria-label="완성 사진 미리보기"></canvas></div>
         <p class="preview-caption">미리보기는 실제 저장될 사진과 같아요.</p>
-        <div class="preview-meta"><span><i class="meta-icon">▥</i> 세로형 네컷 프레임</span><span>600 × 1800 px</span></div>
+        <div class="preview-meta"><span><i class="meta-icon">▥</i> <span id="layoutSummary">2 × 2 클래식</span></span><span id="imageDimensions">600 × 940 px</span></div>
       </aside>
     </section>
 
